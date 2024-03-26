@@ -22,7 +22,7 @@ Aims:
 
 * Supporting your tables with plots.
 
-* Learn how to host your finished report online, so that you can communicate your results with greater freedom.
+* Learn how to host your [finished report online](https://dcs-training.github.io/Interactive-Analysis-Reports-with-R-Markdown.github.io/), so that you can communicate your results with greater freedom.
 
 
 This is an intermediate-level course. You will need to already understand programming, preferably in R. Previous knowledge of statistical analysis is not required but will help you follow the content.
