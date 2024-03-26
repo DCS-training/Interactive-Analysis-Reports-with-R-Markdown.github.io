@@ -1,0 +1,662 @@
+---
+title: "Our interactive report"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(palmerpenguins)
+library(tidyverse) # data tidying and plots
+library(ggridges) #fancy density plots
+library(gridExtra) # stich together multiple charts
+library(correlation) # correlation analysis
+library(see) # correlation heatmap
+library(plotly) # interactive data vis
+library(shiny)
+# setting data
+
+## total data
+df <- penguins %>% 
+  select(-year ) %>% 
+  mutate(sex = as.factor(str_to_title(sex))) %>%
+  na.omit()
+
+## for differences by sex
+total_sex <- df %>% 
+  select(sex, flipper_length_mm, body_mass_g , bill_length_mm ,bill_depth_mm ) 
+
+### Here we use the `subset()` function to split our data
+male <- total_sex %>% 
+  subset(sex == "Male") 
+
+female <- total_sex %>% 
+  subset(sex == "Female") 
+
+## for differences by species
+
+total_species <-  df %>%  
+  select(species, flipper_length_mm, body_mass_g , bill_length_mm ,bill_depth_mm ) 
+
+### Using  `subset()` again, but this time by species
+Adelie <- total_species %>%
+  subset(species == "Adelie")
+
+Chinstrap <- total_species %>%
+  subset(species == "Chinstrap")
+
+Gentoo <- total_species %>%
+  subset(species == "Gentoo")
+
+## Differences by Sex by Species
+
+### This time we are using `subset()` to split by sex and by species
+Male_Adelie <- df %>% subset(sex == "Male" & 
+                       species == "Adelie")
+
+Female_Adelie <- df %>% subset(sex == "Female" & 
+                       species == "Adelie")
+
+Male_Chinstrap <- df %>% subset(sex == "Male" & 
+                       species == "Chinstrap")
+
+Female_Chinstrap <- df %>% subset(sex == "Female" & 
+                       species == "Chinstrap")
+
+Male_Gentoo <- df %>% subset(sex == "Male" & 
+                       species == "Gentoo")
+
+Female_Gentoo <- df %>% subset(sex == "Female" &
+                       species == "Gentoo") 
+```
+
+
+
+
+By Penguin Sex
+===========================================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+```{r}
+selectInput("v_sex", label = "Sex", choices = c("Female", "Male", "All"), 
+            selected = "All")
+```
+
+
+Column {.tabset data-width=400}
+-----------------------------------------------------------------------
+
+### Density Histogram
+
+```{r, echo = FALSE, message = FALSE}
+renderPlot({
+  df %>%
+    select(-species, -island) %>% #removing island and species
+    na.omit() %>%
+    pivot_longer(-sex) %>%
+    group_by(name) %>%
+    mutate(value = scale(value)) %>%
+    ungroup() %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    ggplot(aes(x=value, y = name, fill = I(ifelse(sex== "Female", "red", "blue")))) +
+   # scale_color_identity() +
+    geom_density_ridges(alpha = .7)+
+    theme_classic() +
+    theme(legend.position = "bottom") +
+    labs(y= "")
+})
+
+
+
+```
+
+### Boxplot 
+
+```{r, echo = FALSE, message = FALSE}
+renderPlot({
+  df %>% 
+    select(-species, -island) %>% #removing island and species
+    na.omit() %>%
+    pivot_longer(-sex) %>%
+    group_by(name) %>%
+    mutate(value = scale(value)) %>%
+    ungroup()%>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    ggplot(aes(y=value, x = name, fill = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_boxplot(alpha = .7)+
+    theme_classic() +
+    theme(legend.position = "bottom") +
+    labs(x ="")
+})
+```
+
+### Scatter Charts
+
+```{r}
+
+renderPlot({
+p1 <-df %>%
+          filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+          ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+          geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+          geom_smooth(method = "lm") +
+          theme_classic() +
+          theme(legend.position = "bottom")
+
+p2 <- df %>%
+          filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+          ggplot(aes(x = flipper_length_mm, y = bill_length_mm)) +
+          geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+          geom_smooth(method = "lm") +
+          theme_classic() +
+          theme(legend.position = "bottom")
+
+p3 <- df %>%
+  filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    ggplot(aes(x = flipper_length_mm, y = bill_depth_mm)) +
+    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+
+p4 <-  df %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    ggplot(aes( x = body_mass_g, y = bill_length_mm)) +
+    geom_point(alpha = .7,  size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+
+p5 <- df %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    ggplot(aes( x = body_mass_g, y = bill_depth_mm)) +
+    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+p6 <- df %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    ggplot(aes( x = bill_length_mm, y = bill_depth_mm)) +
+    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+grid.arrange(p1, p2, p3, p4, p5, p6)
+})
+
+
+
+```
+
+
+
+
+Column {.tabset data-width=300}
+-----------------------------------------------------------------------
+
+### Total
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(total_sex)
+summary(results, redundant = TRUE) %>%
+  plot() +
+  theme(legend.position = "")
+```
+
+### Male
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(male)
+summary(results, redundant = TRUE) %>%
+  plot() +
+  theme(legend.position = "")
+```
+
+### Female
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(female)
+summary(results, redundant = TRUE) %>%
+  plot() +
+  theme(legend.position = "")
+```
+
+
+Differences by Species
+===========================================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+```{r}
+selectInput("v_species", label = "Species", choices = c("All", "Adelie", "Chinstrap", "Gentoo"), 
+            selected = "All")
+```
+
+Column {.tabset data-width=500}
+-----------------------------------------------------------------------
+### Density Histogram
+
+```{r, echo = FALSE, message = FALSE}
+renderPlot({
+  df %>%
+    select(-sex, -island) %>% #removing island and species
+    na.omit() %>%
+    pivot_longer(-species) %>%
+    group_by(name) %>%
+    mutate(value = scale(value)) %>%
+    ungroup() %>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes(x=value, y = name, fill = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_density_ridges(alpha = .7)+
+    theme_classic() +
+    theme(legend.position = "bottom") +
+    labs(y= "")
+})
+
+```
+
+### Boxplot 
+
+```{r, echo = FALSE, message = FALSE}
+renderPlot({
+  df %>% 
+    select(-sex, -island) %>% #removing island and species
+    na.omit() %>%
+    pivot_longer(-species) %>%
+    group_by(name) %>%
+    mutate(value = scale(value)) %>%
+    ungroup()%>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes(y=value, x = name, fill = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_boxplot(alpha = .7)+
+    theme_classic() +
+    theme(legend.position = "bottom") +
+    labs(x ="")
+})
+```
+
+### Scatter Charts
+
+```{r}
+
+renderPlot({
+p1 <-df %>%
+          filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+          ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+          geom_point(alpha = .7, size =2, aes(col = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+          geom_smooth(method = "lm") +
+          theme_classic() +
+          theme(legend.position = "bottom")
+
+p2 <- df %>%
+          filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+          ggplot(aes(x = flipper_length_mm, y = bill_length_mm)) +
+          geom_point(alpha = .7, size =2, aes(col = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+          geom_smooth(method = "lm") +
+          theme_classic() +
+          theme(legend.position = "bottom")
+
+p3 <- df %>%
+  filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes(x = flipper_length_mm, y = bill_depth_mm)) +
+    geom_point(alpha = .7, size =2, aes(col =  I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+
+p4 <-  df %>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes( x = body_mass_g, y = bill_length_mm)) +
+    geom_point(alpha = .7, size =2, aes(col =  I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+
+p5 <- df %>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes( x = body_mass_g, y = bill_depth_mm)) +
+    geom_point(alpha = .7, size =2, aes(col =  I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+p6 <- df %>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes( x = bill_length_mm, y = bill_depth_mm)) +
+    geom_point(alpha = .7, size =2, aes(col =  I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+grid.arrange(p1, p2, p3, p4, p5, p6)
+})
+
+
+
+```
+
+
+
+
+Column {.tabset data-width=300}
+-----------------------------------------------------------------------
+
+### Total
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(total_species)
+summary(results, redundant = TRUE) %>%
+  plot() +
+  theme(legend.position = "")
+```
+
+### Adelie
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Adelie)
+summary(results, redundant = TRUE) %>%
+  plot() +
+  theme(legend.position = "")
+```
+
+### Chinstrap
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Chinstrap)
+summary(results, redundant = TRUE) %>%
+  plot() +
+  theme(legend.position = "")
+```
+
+### Gentoo
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Gentoo)
+summary(results, redundant = TRUE) %>%
+  plot() +
+  theme(legend.position = "")
+```
+
+Differences between Sex between each Species
+===========================================================
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+```{r}
+
+selectInput("v_sex", label = "Sex", choices = c("Female", "Male", "All"), 
+             selected = "All")
+
+selectInput("v_species", label = "Species", choices = c("All", "Adelie", "Chinstrap", "Gentoo"), 
+            selected = "All")
+
+```
+
+Column {.tabset data-width=500}
+-----------------------------------------------------------------------
+### Density Histogram
+
+```{r, echo = FALSE, message = FALSE}
+renderPlot({
+  df %>%
+    select( -island) %>% #removing island and species
+    na.omit() %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex)) &
+           str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    pivot_longer(c(-sex,-species) ) %>%
+    group_by(name) %>%
+    mutate(value = scale(value)) %>%
+    ungroup() %>%
+    ggplot(aes(x=value, y = name, fill = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    facet_wrap(~sex) +
+    geom_density_ridges(alpha = .7)+
+    theme_classic() +
+    theme(legend.position = "bottom") +
+    labs(y= "")
+})
+
+    
+    
+```
+
+### Boxplot 
+
+```{r, echo = FALSE, message = FALSE}
+renderPlot({
+  df %>% 
+    select( -island) %>% #removing island and species
+    na.omit() %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex)) &
+           str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    pivot_longer(c(-sex,-species) ) %>%
+    group_by(name) %>%
+    mutate(value = scale(value)) %>%
+    ungroup()%>%
+    ggplot(aes(y=value, x = name, fill = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    facet_wrap(~sex) +
+    geom_boxplot(alpha = .7)+
+    theme_classic() +
+    theme(legend.position = "bottom") +
+    labs(x ="")
+})
+```
+
+### Scatter Charts
+
+```{r}
+
+renderPlot({
+p1 <-df %>%
+          filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+          ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+          facet_wrap(~sex) +
+          geom_point(alpha = .7, size =2, aes(col = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+          geom_smooth(method = "lm") +
+          theme_classic() +
+          theme(legend.position = "bottom")
+
+p2 <- df %>%
+          filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+          ggplot(aes(x = flipper_length_mm, y = bill_length_mm)) +
+          facet_wrap(~sex) +
+          geom_point(alpha = .7, size =2, aes(col = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+          geom_smooth(method = "lm") +
+          theme_classic() +
+          theme(legend.position = "bottom")
+
+p3 <- df %>%
+  filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes(x = flipper_length_mm, y = bill_depth_mm)) +
+    facet_wrap(~sex) +
+    geom_point(alpha = .7, size =2, aes(col =  I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+
+p4 <-  df %>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes( x = body_mass_g, y = bill_length_mm)) +
+    facet_wrap(~sex) +
+    geom_point(alpha = .7, size =2, aes(col = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+
+p5 <- df %>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes( x = body_mass_g, y = bill_depth_mm)) +
+    facet_wrap(~sex) +
+    geom_point(alpha = .7, size =2, aes(col = I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+p6 <- df %>%
+    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    ggplot(aes( x = bill_length_mm,  y = bill_depth_mm)) +
+    facet_wrap(~sex) +
+    geom_point(alpha = .7, size =2, aes(col =  I(case_when(
+      species == "Adelie" ~ "purple1",
+      species == "Chinstrap" ~ "green4",
+      species == "Gentoo" ~ "orange"
+      )))) +
+    geom_smooth(method = "lm") +
+    theme_classic() +
+    theme(legend.position = "bottom")
+
+grid.arrange(p1, p2, p3, p4, p5, p6)
+})
+
+
+
+```
+
+Column {.tabset data-width=300}
+-----------------------------------------------------------------------
+
+### Total
+
+#### Male
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(male)
+summary(results, redundant = TRUE) %>%
+  plot() +
+    theme(legend.position = "")
+```
+
+#### Female
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(female)
+summary(results, redundant = TRUE) %>%
+  plot() +
+    theme(legend.position = "")
+```
+
+### Adelie 
+
+#### Male
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Male_Adelie)
+summary(results, redundant = TRUE) %>%
+  plot()+
+    theme(legend.position = "")
+```
+
+#### Female
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Female_Adelie)
+summary(results, redundant = TRUE) %>%
+  plot() +
+    theme(legend.position = "")
+```
+
+### Chinstrap 
+
+#### Male 
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Male_Chinstrap)
+summary(results, redundant = TRUE) %>%
+  plot() +
+    theme(legend.position = "")
+```
+
+#### Female 
+
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Female_Chinstrap)
+summary(results, redundant = TRUE) %>%
+  plot() +
+    theme(legend.position = "")
+```
+
+### Gentoo 
+
+#### Male 
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Male_Gentoo)
+summary(results, redundant = TRUE) %>%
+  plot() +
+    theme(legend.position = "")
+```
+
+#### Female 
+```{r, echo = FALSE, message = FALSE}
+results <- correlation(Female_Gentoo)
+summary(results, redundant = TRUE) %>%
+  plot() +
+    theme(legend.position = "")
+```

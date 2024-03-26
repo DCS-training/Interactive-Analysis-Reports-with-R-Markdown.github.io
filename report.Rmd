@@ -1,0 +1,387 @@
+---
+title: "Research Report"
+author: "Rhys"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cosmo
+    highlight: espresso
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(palmerpenguins) #penguin data
+library(tidyverse) # data tidying and plots
+library(gtsummary) # quick tidy analysis summaries
+library(correlation) # correlation analysis
+library(see) # correlation heatmap
+library(plotly) # interactive data visualisation
+library(rstatix)
+
+df <- penguins  %>% select(- year) # dropping year from analysis
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+example_code <- penguins %>% 
+  mutate(Penguin_bill_surface_area = bill_length_mm * bill_depth_mm)
+```
+
+If you would like to play around with the visual design of the document, there are numerous templates to choose from. These can be specified into themes and highlights, and can be selected in the YAML box at the start of this document. 
+
+* Valid themes include: default, bootstrap, cerulean, cosmo, darkly, flatly, journal, lumen, paper, readable, sandstone, simplex, spacelab, united, and yeti.
+* Valid highlights include: Supported styles include default, tango, pygments, kate, monochrome, espresso, zenburn, haddock, breezedark, and textmate.
+* All stylistic elements can be modified and customised using CSS code if needed. i.e., to change the font size of the document, we would use the following code (Won't be present in rendered document):
+
+<style type="text/css">
+  body{
+  font-size: 16pt;
+}
+</style>
+
+For more information on styling, please check the following link: (https://bookdown.org/yihui/rmarkdown/html-document.html#appearance-and-style). 
+
+## Introduction
+
+In this particular analysis, we aiming to present how the penguins differ from species to species, and from island to island. We want to show case how these differences are present across the 4 measures collected `bill_length_mm`, `bill_depth_mm`, `flipper_length_mm`, and `body_mass_g`. 
+
+To help users navigate our beautiful document with greater ease, and to provide an element of interactivity, we will be using `{.tabset}` on our headers. Behind the scenes, it operates on a hierarchical structure, which is dependent on the level of your heading. This gets a bit weird and theoretical, so playing around with it in your own work is the best approach to getting a feel for it. But if you would like more information, please check the following link:  https://bookdown.org/yihui/rmarkdown-cookbook/html-tabs.html
+
+
+## Summary stats {.tabset}
+
+### By Species
+
+```{r species_table, echo=FALSE}
+
+table <- df %>% 
+  dplyr::rename( `Bill Length (mm)`= bill_length_mm , 
+                `Bill Depth(mm)` = bill_depth_mm ,
+                `Flipper Length(mm)` = flipper_length_mm ,
+                `Body Mass(g)`= body_mass_g ) %>% 
+  tbl_summary(by = species, 
+              missing = "ifany",
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) 
+
+table
+
+
+```
+
+### By Island
+
+```{r island_table, echo=FALSE}
+
+table <- df %>% 
+  dplyr::rename( `Bill Length (mm)`= bill_length_mm , 
+                `Bill Depth(mm)` = bill_depth_mm ,
+                `Flipper Length(mm)` = flipper_length_mm ,
+                `Body Mass(g)`= body_mass_g ) %>% 
+  tbl_summary(by = island, 
+              missing = "ifany",
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) 
+
+table
+
+```
+
+### By Sex
+
+```{r bio_sex_table, echo=FALSE, message = FALSE}
+
+table <- df %>% 
+  dplyr::rename( `Bill Length (mm)`= bill_length_mm , 
+                `Bill Depth(mm)` = bill_depth_mm ,
+                `Flipper Length(mm)` = flipper_length_mm ,
+                `Body Mass(g)`= body_mass_g ) %>% 
+  tbl_summary(by = sex, 
+              missing = "ifany",
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) 
+
+table
+
+```
+
+## Reporting our data in text{.tabset .tabset-pills}
+
+We can also report our data in text. It will look ugly here, but will be magical in the finished document. The in-line coding is achieved through using backticks and including the letter "r" (as seen below). To simplify process, we first use some data manipulation to define items we want to communicate. The end product allows us to produce transparent analysis, and minimises the risk of typos. As a bonus, it also allows us to re-run our analysis at a much quicker rate if our data is updated!
+
+Once again, we will use the `{.tabset}` to allow our audience to quickly navigate the document. However, this time we are also using `{.tabset-pills}` to change the appearance. Pick and choose which visual style you think is most appropriate for your presentation. (Playing with the themes will change the appearance of the tabsets and tabset-pills as well, so there is plenty of scope for experimenting).
+
+### By Species
+
+```{r , echo = FALSE}
+
+Adelie <- df %>% 
+  dplyr::filter(species == "Adelie")
+Adelie_M_bodymass <- mean(Adelie$body_mass_g, na.rm = TRUE)
+Adelie_sd_bodymass <- sd(Adelie$body_mass_g, na.rm = TRUE)
+
+Chinstrap <- df %>% 
+  dplyr::filter(species == "Chinstrap")
+Chinstrap_M_bodymass <- mean(Chinstrap$body_mass_g, na.rm = TRUE)
+Chinstrap_sd_bodymass <- sd(Chinstrap$body_mass_g, na.rm = TRUE)
+
+Gentoo <- df %>% 
+  dplyr::filter(species == "Gentoo")
+Gentoo_M_bodymass <- mean(Gentoo$body_mass_g, na.rm = TRUE)
+Gentoo_sd_bodymass <- sd(Gentoo$body_mass_g, na.rm = TRUE)
+
+```
+
+* The mean weight of the Adelie penguins is `r round(Adelie_M_bodymass, 2)`g (*sd* = `r  round(Adelie_sd_bodymass,2)`). 
+
+* The mean weight of the Chinstrap penguins is `r round(Chinstrap_M_bodymass, 2)`g (*sd* = `r round(Chinstrap_sd_bodymass,2)`).
+
+* The mean weight of the Gentoo penguins is `r round(Gentoo_M_bodymass, 2)`g (*sd* = `r round(Gentoo_sd_bodymass,2)`).
+
+### By Island
+
+```{r , echo = FALSE}
+
+Biscoe <- df %>% 
+  dplyr::filter(island == "Biscoe")
+Biscoe_M_bodymass <- mean(Biscoe$body_mass_g, na.rm = TRUE)
+Biscoe_sd_bodymass <- sd(Biscoe$body_mass_g, na.rm = TRUE)
+
+Dream <- df %>% 
+  dplyr::filter(island == "Dream")
+Dream_M_bodymass <- mean(Dream$body_mass_g, na.rm = TRUE)
+Dream_sd_bodymass <- sd(Dream$body_mass_g, na.rm = TRUE)
+
+Torgersen <- df %>% 
+  dplyr::filter(island == "Torgersen")
+Torgersen_M_bodymass <- mean(Torgersen$body_mass_g, na.rm = TRUE)
+Torgersen_sd_bodymass <- sd(Torgersen$body_mass_g, na.rm = TRUE)
+
+```
+
+* The mean weight of the penguins on Biscoe island is `r round(Biscoe_M_bodymass, 2)`g (sd = `r  round(Biscoe_sd_bodymass,2)`). 
+
+* The mean weight of the penguins on Dream island is `r round(Dream_M_bodymass, 2)`g (sd = `r round(Chinstrap_sd_bodymass,2)`).
+
+* The mean weight of the penguins on Torgersen island is `r round(Torgersen_M_bodymass, 2)`g (sd = `r round(Gentoo_sd_bodymass,2)`).
+
+## ANOVA and Posthocs {.tabset .tabset-pills}
+
+### Species {.tabset .tabset-pills}
+
+#### Analysis
+
+```{r, message = FALSE, echo = FALSE}
+ species_anova <- aov(body_mass_g ~ species, df)
+ species_anova_summary <- summary(species_anova)
+ tidy_anova <- broom::tidy(species_anova) # Broom lets us transform the anova to a dataframe
+ 
+ # Taking stats and assigning to objects
+ df_min <- tidy_anova %>% select(df) %>% filter(df == min(df))
+ df_max <- tidy_anova %>% select(df) %>% filter(df == max(df))
+ F_stat <- tidy_anova %>% select(statistic) %>% na.omit()
+ ANOVA_p_value <- plyr::round_any(tidy_anova$p.value, .001, ceiling) %>% na.omit()
+
+ # Post hoc t-test
+ 
+post_hocs <- df %>% rstatix::games_howell_test(body_mass_g ~ species) # non-equal variance, so safer post hoc test
+ 
+#post_hoc (uncomment to inspect)
+
+Adelie_vs_Chinstrap_P <- plyr::round_any(post_hocs$p.adj[1],.001, ceiling)
+Adelie_vs_Chinstrap_conf_low <- round(post_hocs$conf.low[1],2)
+Adelie_vs_Chinstrap_conf_high <- round(post_hocs$conf.high[1],2)
+
+Adelie_vs_Gentoo_P <- plyr::round_any(post_hocs$p.adj[2] , .001, ceiling)
+Adelie_vs_Gentoo_conf_low <- round(post_hocs$conf.low[2],2)
+Adelie_vs_Gentoo_conf_high <- round(post_hocs$conf.high[2],2)
+
+Chinstrap_vs_Gentoo_P <-  plyr::round_any((.00001 +post_hocs$p.adj[3]), .001, ceiling) # adding tiny value, as otherwise stuck at 0.
+Chinstrap_vs_Gentoo_conf_low <- round(post_hocs$conf.low[3],2)
+Chinstrap_vs_Gentoo_conf_high <- round(post_hocs$conf.high[3],2)
+
+#ANOVA table
+
+df %>% select(species, body_mass_g) %>% 
+  rename(`Body Mass(g)` = body_mass_g) %>%
+  tbl_summary(by = species, 
+              missing = "no",
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_p(all_continuous() ~ "aov") %>%
+  modify_header( # header needs to be modified to display test statistc and df
+    statistic = "**Test Statistic**",
+    parameter = "**df**"
+   )
+
+
+
+```
+
+One way ANOVA on differences of body mass by species was significant (*F*(`r df_min`,`r df_max`) = `r F_stat`, *p* < `r ANOVA_p_value`). 
+
+* Games Howell Post-hoc analyses were conducted.
+* The body mass of Gentoo Penguins (*M*=`r round(Gentoo_M_bodymass, 2)`, *SD*= `r round(Gentoo_sd_bodymass, 2)`) was significantly greater (95%CI[`r Adelie_vs_Gentoo_conf_low`, `r Adelie_vs_Gentoo_conf_high`],*p*<`r Adelie_vs_Gentoo_P`) than that of Adelie penguins (*M*=`r round(Adelie_M_bodymass, 2)`, *SD*= `r round(Adelie_sd_bodymass, 2)`).
+* The body mass of the Gentoo Penguins was also significant greater (95%CI[`r Chinstrap_vs_Gentoo_conf_low`, `r Chinstrap_vs_Gentoo_conf_high`],*p*<`r Chinstrap_vs_Gentoo_P`) than the Chinstrap penguins (*M*=`r round(Chinstrap_M_bodymass, 2)`, *SD*=`r round(Chinstrap_sd_bodymass, 2)`).
+* No significant difference (95%CI[`r Adelie_vs_Chinstrap_conf_low`, `r Adelie_vs_Chinstrap_conf_high`], *p*=`r Adelie_vs_Chinstrap_P`) was present between Adelie (*M*=`r round(Adelie_M_bodymass, 2)`, *SD*= `r round(Adelie_sd_bodymass, 2)`) and Chinstrap penguins (*M*=`r round(Chinstrap_M_bodymass, 2)`, *SD*=`r round(Chinstrap_sd_bodymass, 2)`).
+
+#### Plot
+
+```{r , echo = FALSE, message = FALSE, error = FALSE}
+p <- p <- ggplot(df,
+       aes(y = body_mass_g, x = species, fill = species)) +
+  geom_boxplot()+
+ labs(y = "Body Mass(g)")+
+  theme_classic()
+  
+p
+```
+
+
+### Island{.tabset .tabset-pills}
+
+#### Analysis
+
+```{r, message = FALSE, echo = FALSE}
+ island_anova <- aov(body_mass_g ~ island, df)
+ island_anova_summary <- summary(species_anova)
+ tidy_anova <- broom::tidy(island_anova) # Broom lets us transform the anova to a dataframe
+ 
+ # Taking stats and assigning to objects
+ df_min <- tidy_anova %>% select(df) %>% filter(df == min(df))
+ df_max <- tidy_anova %>% select(df) %>% filter(df == max(df))
+ F_stat <- tidy_anova %>% select(statistic) %>% na.omit()
+ ANOVA_p_value <- plyr::round_any(tidy_anova$p.value, .001, ceiling) %>% na.omit()
+
+ # Post hoc t-test
+ 
+post_hocs <- df %>% rstatix::games_howell_test(body_mass_g ~ island) # non-equal variance, so safer post hoc test
+ 
+#post_hocs  #(uncomment to inspect)
+
+Biscoe_vs_Dream_P <- plyr::round_any(post_hocs$p.adj[1],.001, ceiling)
+Biscoe_vs_Dream_conf_low <- round(post_hocs$conf.low[1],2)
+Biscoe_vs_Dream_conf_high <- round(post_hocs$conf.high[1],2)
+
+Biscoe_vs_Torgersen_P <- plyr::round_any(post_hocs$p.adj[2] , .001, ceiling)
+Biscoe_vs_Torgersen_conf_low <- round(post_hocs$conf.low[2],2)
+Biscoe_vs_Torgersen_conf_high <- round(post_hocs$conf.high[2],2)
+
+Dream_vs_Torgersen_P <-  plyr::round_any((.00001 +post_hocs$p.adj[3]), .001, ceiling) # adding tiny value, as otherwise stuck at 0.
+Dream_vs_Torgersen_conf_low <- round(post_hocs$conf.low[3],2)
+Dream_vs_Torgersen_conf_high <- round(post_hocs$conf.high[3],2)
+
+#ANOVA table
+
+df %>% select(island, body_mass_g) %>% 
+  rename(`Body Mass(g)` = body_mass_g) %>%
+  tbl_summary(by = island, 
+              missing = "no",
+              statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
+  add_p(all_continuous() ~ "aov") %>%
+  modify_header( # header needs to be modified to display test statistc and df
+    statistic = "**Test Statistic**",
+    parameter = "**df**"
+   )
+
+
+```
+
+One way ANOVA on differences of body mass by Island was significant (*F*(`r df_min`,`r df_max`) = `r F_stat`, *p* < `r ANOVA_p_value`). 
+
+* Games Howell Post-hoc analyses were conducted. 
+* the body mass of Dream Penguins (*M*=`r round(Dream_M_bodymass, 2)`, *SD*= `r round(Dream_sd_bodymass, 2)`) of B was significantly lower (95%CI [`r Biscoe_vs_Dream_conf_low`, `r Biscoe_vs_Dream_conf_high`],*p*<`r Biscoe_vs_Dream_P`) than the Biscoe penguins (*M*=`r round(Biscoe_M_bodymass, 2)`, *SD*= `r round(Biscoe_sd_bodymass, 2)`). 
+* The body mass of the Torgersen penguins(*M* =`r round(Torgersen_M_bodymass, 2)`, *SD* =`r round(Torgersen_sd_bodymass, 2)`) also was significant lower (95%CI [`r Biscoe_vs_Torgersen_conf_low`, `r Biscoe_vs_Torgersen_conf_high`],*p*<`r Chinstrap_vs_Gentoo_P`) than the Biscoe Penguins (*M*=`r round(Biscoe_M_bodymass, 2)`, *SD*=`r round(Biscoe_sd_bodymass, 2)`) . 
+* There was no significant difference (95%CI [`r Dream_vs_Torgersen_conf_low`, `r Dream_vs_Torgersen_conf_high`], *p*<`r Dream_vs_Torgersen_P`) between the body mass of the Torgersen Island Penguins (*M* =`r round(Torgersen_M_bodymass, 2)`, *SD* =`r round(Torgersen_sd_bodymass, 2)`) and the Dream Island penguins (*M*=`r round(Dream_M_bodymass, 2)`, *SD*= `r round(Dream_sd_bodymass, 2)`).
+
+#### Plot
+
+```{r , echo = FALSE, message = FALSE, error = FALSE}
+ p <- ggplot(df,
+       aes(y = body_mass_g, x = island, fill = island)) +
+  geom_boxplot()+
+ labs(y = "Body Mass(g)")+
+  theme_classic()
+  
+p
+```
+
+
+## Extra plots {.tabset}
+
+Here we will make use of the `plotly` package to make our plots interactive. The good news is, this is super simple if you already know how to use `ggplot`. Simply assign your plot to an object, and then wrap it in the `ggplotly()` function. The appearance of your plot may change compared to your original design as its converted to a `plotly` item, so so experimenting is recommended. For more information and vignettes, check the following link: https://plotly.com/ggplot2/ 
+
+### Bio Sex
+
+```{r , echo = FALSE , message = FALSE, error = FALSE}
+p <- ggplot(df,
+       aes(y = body_mass_g, x = sex, fill = sex)) +
+  geom_boxplot()+
+ labs(y = "Body Mass(g)")+
+  theme_classic() +
+  theme(legend.position = "bottom")
+  
+ggplotly(p)
+```
+
+### Species by Bio Sex
+
+```{r , echo = FALSE, message = FALSE, error = FALSE}
+p <- ggplot(df,
+       aes(y = body_mass_g, x = sex, fill = sex)) +
+  facet_wrap(~species) +
+  geom_boxplot()+
+ labs(y = "Body Mass(g)")+
+  theme_classic() +
+  theme(legend.position = "bottom")
+  
+ggplotly(p)
+```
+
+### Island by Bio Sex
+
+```{r , echo = FALSE, message = FALSE, error = FALSE}
+p <- ggplot(df,
+       aes(y = body_mass_g, x = sex, fill = sex)) +
+  facet_wrap(~island) +
+  geom_boxplot()+
+ labs(y = "Body Mass(g)")+
+  theme_classic() +
+  theme(legend.position = "bottom")
+  
+ggplotly(p)
+```
+
+### Scatter plot 
+
+```{r , echo = FALSE, message = FALSE, error = FALSE}
+p <- ggplot(df,
+       aes(y = body_mass_g, x = flipper_length_mm, color = sex)) +
+  facet_wrap(~island) +
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(y = "Body Mass(g)", y = "Flipper Length(mm)") +
+  theme_classic() +
+  theme(legend.position = "bottom")
+  
+ggplotly(p) 
+```
+
+### EVERYTHING!!!
+
+```{r, echo = FALSE, message = FALSE, error = FALSE}
+p <- ggplot(df,
+       aes(y = body_mass_g, x = sex, fill = sex)) +
+  geom_violin(alpha = .6) +
+  geom_boxplot(position = "dodge", alpha = .7, width = .5)+
+  facet_grid(~species ~island)+
+ labs(y = "Body Mass(g)")+
+  theme_classic() +
+  theme(legend.position = "bottom")
+  
+ggplotly(p)
+```
