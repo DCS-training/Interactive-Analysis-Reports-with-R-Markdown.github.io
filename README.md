@@ -18,15 +18,18 @@ Aims:
 
 * Create beautiful tables to show off your results.
 
-* Automating reporting. Adding interactive elements, to increase engagement and accessibility of your report.
+* Automating reporting.
 
 * Supporting your tables with plots.
+
+* Adding interactive elements, to increase engagement and accessibility of your report.
 
 * Learn how to host your [finished report online](https://dcs-training.github.io/Interactive-Analysis-Reports-with-R-Markdown.github.io/), so that you can communicate your results with greater freedom.
 
 
 This is an intermediate-level course. You will need to already understand programming, preferably in R. Previous knowledge of statistical analysis is not required but will help you follow the content.
 
+For those who want an additional challenge to their skills, we have included an example document of an interactive flexdashboard. It's built on a rmarkdown document, but contains some extra perks to play around with!
 
 ### For R On Noteable
 
