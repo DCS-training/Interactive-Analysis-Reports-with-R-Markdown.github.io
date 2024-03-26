@@ -16,8 +16,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(palmerpenguins) #penguin data
 library(tidyverse) # data tidying and plots
 library(gtsummary) # quick tidy analysis summaries
-library(correlation) # correlation analysis
-library(see) # correlation heatmap
 library(plotly) # interactive data visualisation
 library(rstatix)
 
