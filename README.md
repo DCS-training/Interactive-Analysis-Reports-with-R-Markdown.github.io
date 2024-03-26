@@ -34,7 +34,7 @@ This is an intermediate-level course. You will need to already understand progra
 2. Login with your EASE credentials
 3. Select RStudio as a personal notebook server and press start
 4. Go to File > New Project> Version Control > Git
-5. Copy and Paste this repository URL [https://github.com/DCS-training/IntroCausalInference](https://github.com/DCS-training/Interactive-Analysis-Reports-with-R-Markdown.github.io) as the Repository URL (The Project directory name will filled in automatically but you can change it if you want your folder in Notable to have a different name).
+5. Copy and Paste this repository URL [https://github.com/DCS-training/Interactive-Analysis-Reports-with-R-Markdown.github.io](https://github.com/DCS-training/Interactive-Analysis-Reports-with-R-Markdown.github.io) as the Repository URL (The Project directory name will filled in automatically but you can change it if you want your folder in Notable to have a different name).
 6. Decide where to locate the folder. By default, it will locate it in your home directory
 7. Press Create Project
 Congratulations you have now pulled the content of the repository on your Notable server space.
