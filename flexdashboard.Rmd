@@ -102,7 +102,7 @@ renderPlot({
     mutate(value = scale(value)) %>%
     ungroup() %>%
     filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>% #filter is used to combine our dropdown select feature with the plots. So now, they update!
-    ggplot(aes(x=value, y = name, fill = I(ifelse(sex== "Female", "red", "blue")))) +
+    ggplot(aes(x=value, y = name, fill = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
    # scale_color_identity() +
     geom_density_ridges(alpha = .7)+
     theme_classic() +
@@ -126,7 +126,7 @@ renderPlot({
     mutate(value = scale(value)) %>%
     ungroup()%>%
     filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>% #filter is used to combine our dropdown select feature with the plots. So now, they update!
-    ggplot(aes(y=value, x = name, fill = I(ifelse(sex== "Female", "red", "blue")))) +
+    ggplot(aes(y=value, x = name, fill = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
     geom_boxplot(alpha = .7)+
     theme_classic() +
     theme(legend.position = "bottom") +
@@ -142,7 +142,7 @@ renderPlot({
 p1 <-df %>%
           filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>% #filter is used to combine our dropdown select feature with the plots. So now, they update!
           ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
-          geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+          geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
           geom_smooth(method = "lm") +
           theme_classic() +
           theme(legend.position = "bottom")
@@ -150,7 +150,7 @@ p1 <-df %>%
 p2 <- df %>%
           filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
           ggplot(aes(x = flipper_length_mm, y = bill_length_mm)) +
-          geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+          geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
           geom_smooth(method = "lm") +
           theme_classic() +
           theme(legend.position = "bottom")
@@ -158,7 +158,7 @@ p2 <- df %>%
 p3 <- df %>%
   filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
     ggplot(aes(x = flipper_length_mm, y = bill_depth_mm)) +
-    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
     geom_smooth(method = "lm") +
     theme_classic() +
     theme(legend.position = "bottom")
@@ -167,7 +167,7 @@ p3 <- df %>%
 p4 <-  df %>%
     filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
     ggplot(aes( x = body_mass_g, y = bill_length_mm)) +
-    geom_point(alpha = .7,  size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_point(alpha = .7,  size =2, aes(col = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
     geom_smooth(method = "lm") +
     theme_classic() +
     theme(legend.position = "bottom")
@@ -176,7 +176,7 @@ p4 <-  df %>%
 p5 <- df %>%
     filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
     ggplot(aes( x = body_mass_g, y = bill_depth_mm)) +
-    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
     geom_smooth(method = "lm") +
     theme_classic() +
     theme(legend.position = "bottom")
@@ -184,7 +184,7 @@ p5 <- df %>%
 p6 <- df %>%
     filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
     ggplot(aes( x = bill_length_mm, y = bill_depth_mm)) +
-    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
+    geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "magenta1", "cyan2")))) +
     geom_smooth(method = "lm") +
     theme_classic() +
     theme(legend.position = "bottom")
