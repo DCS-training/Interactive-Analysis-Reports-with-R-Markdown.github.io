@@ -24,8 +24,7 @@ Aims:
 
 * Adding interactive elements, to increase engagement and accessibility of your report.
 
-* Learn how to host your [finished report online](https://dcs-training.github.io/Interactive-Analysis-Reports-with-R-Markdown.github.io/), so that you can communicate your results with greater freedom.
-
+* Learn how to host your [finished report online](https://dcs-training.github.io/Interactive-Analysis-Reports-with-R-Markdown.github.io/), so that you can communicate your results with greater freedom. For additional guidance on hosting your html documents online, please check our [CDCS course on webistes with github-pages](https://github.com/DCS-training/website-with-github-pages).
 
 This is an intermediate-level course. You will need to already understand programming, preferably in R. Previous knowledge of statistical analysis is not required but will help you follow the content.
 
