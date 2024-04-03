@@ -83,7 +83,7 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 ```{r}
 selectInput("v_sex", label = "Sex", choices = c("Female", "Male", "All"), 
-            selected = "All")
+            selected = "All") # This is used to provide a drop down menu to add interactivity to the dashboard.
 ```
 
 
@@ -101,7 +101,7 @@ renderPlot({
     group_by(name) %>%
     mutate(value = scale(value)) %>%
     ungroup() %>%
-    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>% #filter is used to combine our dropdown select feature with the plots. So now, they update!
     ggplot(aes(x=value, y = name, fill = I(ifelse(sex== "Female", "red", "blue")))) +
    # scale_color_identity() +
     geom_density_ridges(alpha = .7)+
@@ -125,7 +125,7 @@ renderPlot({
     group_by(name) %>%
     mutate(value = scale(value)) %>%
     ungroup()%>%
-    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>% #filter is used to combine our dropdown select feature with the plots. So now, they update!
     ggplot(aes(y=value, x = name, fill = I(ifelse(sex== "Female", "red", "blue")))) +
     geom_boxplot(alpha = .7)+
     theme_classic() +
@@ -140,7 +140,7 @@ renderPlot({
 
 renderPlot({
 p1 <-df %>%
-          filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>%
+          filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex))) %>% #filter is used to combine our dropdown select feature with the plots. So now, they update!
           ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
           geom_point(alpha = .7, size =2, aes(col = I(ifelse(sex== "Female", "red", "blue")))) +
           geom_smooth(method = "lm") +
@@ -426,10 +426,10 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 ```{r}
 
-selectInput("v_sex", label = "Sex", choices = c("Female", "Male", "All"), 
+selectInput("w_sex", label = "Sex", choices = c("Female", "Male", "All"), 
              selected = "All")
 
-selectInput("v_species", label = "Species", choices = c("All", "Adelie", "Chinstrap", "Gentoo"), 
+selectInput("w_species", label = "Species", choices = c("All", "Adelie", "Chinstrap", "Gentoo"), 
             selected = "All")
 
 ```
@@ -443,8 +443,8 @@ renderPlot({
   df %>%
     select( -island) %>% #removing island and species
     na.omit() %>%
-    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex)) &
-           str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+           str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
     pivot_longer(c(-sex,-species) ) %>%
     group_by(name) %>%
     mutate(value = scale(value)) %>%
@@ -472,8 +472,8 @@ renderPlot({
   df %>% 
     select( -island) %>% #removing island and species
     na.omit() %>%
-    filter(str_detect(sex, if_else(input$v_sex == "All", "ale", input$v_sex)) &
-           str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+           str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
     pivot_longer(c(-sex,-species) ) %>%
     group_by(name) %>%
     mutate(value = scale(value)) %>%
@@ -497,7 +497,8 @@ renderPlot({
 
 renderPlot({
 p1 <-df %>%
-          filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+          filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+                   str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
           ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
           facet_wrap(~sex) +
           geom_point(alpha = .7, size =2, aes(col = I(case_when(
@@ -510,7 +511,8 @@ p1 <-df %>%
           theme(legend.position = "bottom")
 
 p2 <- df %>%
-          filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+          filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+                   str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
           ggplot(aes(x = flipper_length_mm, y = bill_length_mm)) +
           facet_wrap(~sex) +
           geom_point(alpha = .7, size =2, aes(col = I(case_when(
@@ -523,7 +525,8 @@ p2 <- df %>%
           theme(legend.position = "bottom")
 
 p3 <- df %>%
-  filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+  filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+           str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
     ggplot(aes(x = flipper_length_mm, y = bill_depth_mm)) +
     facet_wrap(~sex) +
     geom_point(alpha = .7, size =2, aes(col =  I(case_when(
@@ -537,7 +540,8 @@ p3 <- df %>%
 
 
 p4 <-  df %>%
-    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+             str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
     ggplot(aes( x = body_mass_g, y = bill_length_mm)) +
     facet_wrap(~sex) +
     geom_point(alpha = .7, size =2, aes(col = I(case_when(
@@ -551,7 +555,8 @@ p4 <-  df %>%
 
 
 p5 <- df %>%
-    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+             str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
     ggplot(aes( x = body_mass_g, y = bill_depth_mm)) +
     facet_wrap(~sex) +
     geom_point(alpha = .7, size =2, aes(col = I(case_when(
@@ -564,7 +569,8 @@ p5 <- df %>%
     theme(legend.position = "bottom")
 
 p6 <- df %>%
-    filter(str_detect(species, if_else(input$v_species == "All", "[ea]", input$v_species))) %>%
+    filter(str_detect(sex, if_else(input$w_sex == "All", "ale", input$w_sex)) &
+             str_detect(species, if_else(input$w_species == "All", "[ea]", input$w_species))) %>%
     ggplot(aes( x = bill_length_mm,  y = bill_depth_mm)) +
     facet_wrap(~sex) +
     geom_point(alpha = .7, size =2, aes(col =  I(case_when(
