@@ -6,7 +6,7 @@ output:
   html_document:
     toc: true
     toc_float: true
-    theme: cosmo
+    theme: spacelab
     highlight: espresso
 ---
 
@@ -145,7 +145,7 @@ Once again, we will use the `{.tabset}` to allow our audience to quickly navigat
 ### By Species
 
 ```{r , echo = FALSE}
-
+# Defining mean and sd objects for easier inline coding
 Adelie <- df %>% 
   dplyr::filter(species == "Adelie")
 Adelie_M_bodymass <- mean(Adelie$body_mass_g, na.rm = TRUE)
@@ -172,7 +172,7 @@ Gentoo_sd_bodymass <- sd(Gentoo$body_mass_g, na.rm = TRUE)
 ### By Island
 
 ```{r , echo = FALSE}
-
+# Defining mean and sd objects for easier inline coding
 Biscoe <- df %>% 
   dplyr::filter(island == "Biscoe")
 Biscoe_M_bodymass <- mean(Biscoe$body_mass_g, na.rm = TRUE)
@@ -203,6 +203,8 @@ Torgersen_sd_bodymass <- sd(Torgersen$body_mass_g, na.rm = TRUE)
 #### Analysis
 
 ```{r, message = FALSE, echo = FALSE}
+# Defining ANOVA objects for inline coding - using the "tidy" function to help
+
  species_anova <- aov(body_mass_g ~ species, df)
  species_anova_summary <- summary(species_anova)
  tidy_anova <- broom::tidy(species_anova) # Broom lets us transform the anova to a dataframe
@@ -213,11 +215,11 @@ Torgersen_sd_bodymass <- sd(Torgersen$body_mass_g, na.rm = TRUE)
  F_stat <- tidy_anova %>% select(statistic) %>% na.omit()
  ANOVA_p_value <- plyr::round_any(tidy_anova$p.value, .001, ceiling) %>% na.omit()
 
- # Post hoc t-test
+ # Post hoc t-test  objects for inline coding
  
 post_hocs <- df %>% rstatix::games_howell_test(body_mass_g ~ species) # non-equal variance, so safer post hoc test
 
-#post_hoc (uncomment to inspect)
+#post_hoc #(uncomment to inspect)
 
 Adelie_vs_Chinstrap_P <- plyr::round_any(post_hocs$p.adj[1],.001, ceiling)
 Adelie_vs_Chinstrap_conf_low <- round(post_hocs$conf.low[1],2)
@@ -349,7 +351,7 @@ Here we make use of the `broom` package to help us extract our regression stats 
 #### Analysis
 ```{r, echo=FALSE }
 # Setting model
-m1 <- lm(scale(body_mass_g) ~ scale(flipper_length_mm), df)
+m1 <- lm(scale(body_mass_g) ~ scale(flipper_length_mm) + species + sex, df)
 
 model_list <- list(
                    "Simple model" = m1
@@ -364,14 +366,14 @@ modelsummary(model_list,
              fmt = 2,
              estimate  = "{estimate}{stars}",
              stars = TRUE,
-             gof_map = c("nobs", "df", "r.squared", "adj.r.squared", "F"),
+             gof_map = c("nobs", "df.residual", "r.squared", "adj.r.squared", "F"),
              output = "html")
 # We can see all gof options by running `modelsummary::gof_map` in console
 
 ```
 
 * Flipper Length is a significant predictor of Bodymass in Penguins ($\beta$ = `r round(tidy_1$estimate[2], 2)`, *p* < `r plyr::round_any(tidy_1$p.value[2] , .001, ceiling)`).
-* Model fit is significant (*F* (`r model_fit$df.residual`, `r model_fit$df`) = `r round(model_fit$statistic, 2)`, *p* < `r plyr::round_any(model_fit$p.value , .001, ceiling)`), with `r round(model_fit$adj.r.squared * 100, 2)`% of model variance explained by the $R^2_{adj}$.
+* Model fit is significant (*F* (`r model_fit$df`, `r model_fit$df.residual`) = `r round(model_fit$statistic, 2)`, *p* < `r plyr::round_any(model_fit$p.value , .001, ceiling)`), with `r round(model_fit$adj.r.squared * 100, 2)`% of model variance explained by the $R^2_{adj}$.
 
 #### Coefficent Plot 
 
@@ -385,12 +387,13 @@ modelplot(m1, coef_omit = 'Interc')+
 #### Analysis
 ```{r, echo=FALSE }
 # Setting model
-m2 <- lm(scale(body_mass_g) ~ scale(flipper_length_mm) * species, df)
+m2 <- lm(scale(body_mass_g) ~ scale(flipper_length_mm) * species + sex, df)
 
 model_list <- list(
                    "Simple model" = m1,
                    "Advanced model" = m2
                    )
+
 # converting to table for in text output
 tidy_1 <- broom::tidy(m2)
 model_fit <- broom::glance(m2)
@@ -400,15 +403,15 @@ modelsummary(model_list,
              fmt = 2,
              estimate  = "{estimate}{stars}",
              stars = TRUE,
-             gof_map = c("nobs", "df", "r.squared", "adj.r.squared", "F"),
+             gof_map = c("nobs", "df.residual", "r.squared", "adj.r.squared", "F"),
              output = "html")
 
 # We can see all gof options by running `modelsummary::gof_map` in console
 
 ```
 
-* Flipper Length when accounting for `Species` is a significant predictor of Bodymass in Penguins ($\beta$ = `r round(tidy_1$estimate[2], 2)`, *p* < `r plyr::round_any(tidy_1$p.value[2] , .001, ceiling)`).
-* Model fit is significant (*F* (`r model_fit$df.residual`, `r model_fit$df`) = `r round(model_fit$statistic, 2)`, *p* < `r plyr::round_any(model_fit$p.value , .001, ceiling)`), with `r round(model_fit$adj.r.squared * 100, 2)`% of model variance explained by the $R^2_{adj}$.
+* Flipper Length when accounting for an interaction with `Species` is a significant predictor of Bodymass in Penguins ($\beta$ = `r round(tidy_1$estimate[2], 2)`, *p* < `r plyr::round_any(tidy_1$p.value[2] , .001, ceiling)`).
+* Model fit is significant (*F* (`r model_fit$df`, `r model_fit$df.residual`) = `r round(model_fit$statistic, 2)`, *p* < `r plyr::round_any(model_fit$p.value , .001, ceiling)`), with `r round(model_fit$adj.r.squared * 100, 2)`% of model variance explained by the $R^2_{adj}$.
 
 #### Coefficent Plot 
 
