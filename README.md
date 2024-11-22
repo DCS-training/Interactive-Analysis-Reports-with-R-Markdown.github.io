@@ -14,7 +14,7 @@ Aims:
 
 * Creating and customising your own R markdown reports.
 
-* Learn the basics of creating html documents through R markdown.
+* Learn the basics of rendering documents through R markdown.
 
 * Create beautiful tables to show off your results.
 
@@ -24,9 +24,8 @@ Aims:
 
 * Adding interactive elements, to increase engagement and accessibility of your report.
 
-* Learn how to host your [finished report online](https://dcs-training.github.io/Interactive-Analysis-Reports-with-R-Markdown.github.io/), so that you can communicate your results with greater freedom. For additional guidance on hosting your html documents online, please check our [CDCS course on webistes with github-pages](https://github.com/DCS-training/website-with-github-pages).
 
-This is an intermediate-level course. You will need to already understand programming, preferably in R. Previous knowledge of statistical analysis is not required but will help you follow the content.
+This is an intermediate-level course. You will need to already understand the basics of programming, preferably in R (i.e., having previous experience with tidyverse functions). Previous knowledge of statistical analysis is not required but will help you follow the content.
 
 For those who want an additional challenge to their skills, we have included an example document of an interactive flexdashboard. It's built on a rmarkdown document, but contains some extra perks to play around with!
 
