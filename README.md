@@ -29,6 +29,11 @@ This is an intermediate-level course. You will need to already understand the ba
 
 For those who want an additional challenge to their skills, we have included an example document of an interactive flexdashboard. It's built on a rmarkdown document, but contains some extra perks to play around with!
 
+For additional interested in more advanced reporting with R (including using Quarto - which is functionally similar to R markdown, but with extra features), the following presentation from the Posit 2024 Conference and associated git repository has some amazing tricks for parametised reporting:
+<https://www.youtube.com/watch?v=dCoHNIPQzJE>
+<https://github.com/ryjohnson09/pdfpalooza>
+
+
 ## R Setting Up
 
 You can either run the code on your own machine or through Posit (RStudio Online IDE) or if you are part of the University of Edinburgh through [Noteable](https://noteable.edina.ac.uk/).
