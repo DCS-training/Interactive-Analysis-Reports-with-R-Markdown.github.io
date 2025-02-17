@@ -11,11 +11,12 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE) # we set this to false, so that by default our code will not show up in our finished document
 
 library(palmerpenguins) #penguin data
 library(tidyverse) # data tidying and plots
-library(gtsummary) # quick tidy analysis summaries
+library(gt) # easy table presentation
+library(gtsummary) # readymade tidy analysis summaries
 library(modelsummary) # May need to install `data.table` to make package work. Allows for quick tidy analysis summaries.
 library(plotly) # interactive data visualisation
 library(rstatix)
@@ -64,12 +65,11 @@ For the overall summary table, we will be using the `modelsummmary` package. It 
 ```{r overall_table, echo=FALSE}
 
 table <- df %>% 
-  dplyr::rename( `Bill Length (mm)`= bill_length_mm , 
-                `Bill Depth(mm)` = bill_depth_mm ,
-                `Flipper Length(mm)` = flipper_length_mm ,
-                `Body Mass(g)`= body_mass_g ) %>% 
-  datasummary_skim(#, output = "flextable"
-                 ) 
+  # dplyr::rename( `Bill Length (mm)`= bill_length_mm , 
+  #               `Bill Depth(mm)` = bill_depth_mm ,
+  #               `Flipper Length(mm)` = flipper_length_mm ,
+  #               `Body Mass(g)`= body_mass_g ) %>% 
+  datasummary_skim(output = "gt") 
 
 table
 
@@ -82,37 +82,35 @@ For the within group summaries, we are using the `gtsummary` package. This is an
 ```{r species_table, echo=FALSE}
 
 table <- df %>%
+  select(- island, - sex) %>% # we can remove variables with the `-` symbol in select()
+  na.omit() %>% # removing na to make tidier data summary
   dplyr::rename(`Bill Length (mm)`= bill_length_mm ,
                 `Bill Depth(mm)` = bill_depth_mm ,
                 `Flipper Length(mm)` = flipper_length_mm ,
                 `Body Mass(g)`= body_mass_g ) %>%
   tbl_summary(by = species,
-              missing = "ifany",
               statistic = list(all_continuous() ~ "{mean} ({sd})"))
 
 table
-# d <- as.data.frame(df  %>% 
-#   dplyr::rename(`Bill Length (mm)`= bill_length_mm ,
-#                 `Bill Depth(mm)` = bill_depth_mm ,
-#                 `Flipper Length(mm)` = flipper_length_mm ,
-#                 `Body Mass(g)`= body_mass_g ) )
-# #%>%
-# datasummary_balance(~species, d #, output = "flextable"
-#                  )
-# d
+
 ```
+
+## Task {.tabset}
+
+Edit the code chunks below to present 2 summary tables. The first by Island, the second by Sex.
 
 ### By Island
 
 ```{r island_table, echo=FALSE}
 
 table <- df %>%
+  select() %>% 
+  na.omit() %>%
   dplyr::rename( `Bill Length (mm)`= bill_length_mm ,
                 `Bill Depth(mm)` = bill_depth_mm ,
                 `Flipper Length(mm)` = flipper_length_mm ,
                 `Body Mass(g)`= body_mass_g ) %>%
-  tbl_summary(by = island,
-              missing = "ifany",
+  tbl_summary(# by = ,
               statistic = list(all_continuous() ~ "{mean} ({sd})"))
 
 table
@@ -123,13 +121,15 @@ table
 
 ```{r bio_sex_table, echo=FALSE, message = FALSE}
 
+
 table <- df %>%
+  select() %>% 
+  na.omit() %>%
   dplyr::rename( `Bill Length (mm)`= bill_length_mm ,
                 `Bill Depth(mm)` = bill_depth_mm ,
                 `Flipper Length(mm)` = flipper_length_mm ,
                 `Body Mass(g)`= body_mass_g ) %>%
-  tbl_summary(by = sex,
-              missing = "ifany",
+  tbl_summary(# by = ,
               statistic = list(all_continuous() ~ "{mean} ({sd})"))
 
 table
