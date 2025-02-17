@@ -1,0 +1,208 @@
+---
+title: "Report making with Quarto - Word doc "
+format: 
+  docx:
+    fig-pos: "hold"
+    tbl-pos: "hold"
+    toc: true
+header-includes:
+ \usepackage{float}
+editor: visual
+---
+
+```{r}
+pacman::p_load(jpeg) # work with jpeg files
+pacman::p_load(tidyverse) # data tidying and plotting
+pacman::p_load(broom) # tidy your analysis outputs
+pacman::p_load(gt) # table making
+
+```
+
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+## Writing documents in R
+
+Let's get started on the basics of writing documents with R. We are using Quarto today instead of R markdown. From my experience, Quarto makes life easier with rendering pdf documents, and some of the styling features are more accessible to use. [Quarto also has the benefit of being able to integrate python and other coding languages into the document](https://quarto.org/docs/computations/python.html#:~:text=Quarto%20supports%20executable%20Python%20code%20blocks%20within%20markdown.,is%20automatically%20re-run%20whenever%20the%20document%20is%20rendered.)!
+
+Just like R markdown, we use a combination of coding chunks, and markdown syntax to generate our documents. If you are ***curious*** to see the differences between the markdown syntax code and output, try swithing between the `source` and `visual` output modes.
+
+### A quick overview of markdown syntax shortcuts
+
+If you ever get stuck, googling for R markdown or Quarto solutions will help you out. The [Quarto website](https://quarto.org/docs/authoring/markdown-basics.html) has amazing resources to check out as well. For today, here is an overview of useful syntax:
+
+* To *italicise* words, we wrap  `*` either side of the *word*.
+* To **bolden** words, we wrap  `**` either side of the **word**.
+* We can ***bolden*** and ***italicise*** by wraping `***` wither side of the ***word***.
+* To superscript, we wrap `^` either side of the text^2^.
+* To subscript, we wrap `~` either side of the text~2~.
+* To include [mathematical notation](https://qmd4sci.njtierney.com/math#:~:text=Quarto%20is%20a%20tool%20that%20allows%20you%20integrate,can%20be%20reproduced%20by%20anyone%20with%20a%20computer.), we use `$` eitherside of our desired symbols $E = mc^{2}$ .
+
+
+To include an image we wrap the path directory with `[!]`. (This might be easier in `visual` mode, where we can select the image with a file browser)
+
+!["Our image caption"](https://raw.github.com/DCS-training/Interactive-Analysis-Reports-with-R-Markdown.github.io/main/images/cdcs_logo.jpg){fig-align="center" width="450" height="300"}.
+
+We can make tables manually with the markdown syntax. Personally, I would avoid this as it risks error. I think it is much more effective to use the `gt` package, as it allows us to integrate our code and our data directly into the table.
+
+### Manual table
+
+| Right | Left | Default | Center |
+|------:|:-----|---------|:------:|
+|   12  |  12  |    12   |    12  |
+|  123  |  123 |   123   |   123  |
+|    1  |    1 |     1   |     1  |
+
+### GT table
+
+The `gt()` function converts our table into a format that can be rendered into tables in both word and pdf outputs. Making it a very useful tool for us in R. Our first step is to create the data object we want, and then we pipe `%>%` the `gt()` function onto it to render the table.
+
+::: {tbl-pos="h" layout-ncol="1"}
+
+```{r}
+#| echo: false
+#| fig-show: hold
+
+table <- iris %>%
+  group_by(Species) %>%
+  summarise(mean_petal_length = mean(Petal.Length),
+            mean_petal_width = mean(Petal.Width))
+
+table %>% gt()
+```
+
+:::
+
+You'll have noticed from the above code chunk that we included `#| fig-show: hold` . This tells R that we want our rendered item to appear below where the code chunk is relative to the document. 
+
+
+### Inline coding
+
+We might find ourselves wanting to report numbers from our analysis directly into our text. Usually, this would involve a back and forth between our analysis file and our document. It's where I tend to make mistakes! But this is also a pain if our analysis is updated for any reason, as it involves painstakingly checking and changing our documetn to make it is consitent with the new analysis. 
+
+We can reduce this pain with inline coding. Inline coding allows us to extract values directly from our coded objects. To do this, we use the two backticks `` , and include the letter "r" in it. This tells the software to recognise that we want r code to be used in the text. From there, we treat the coding just as we would in the code chunks.
+
+My tip here is to simplify and extract your values into objects in advance. It will make life easier, declutters your write up,  and provides an additional opportunitiy to verify your work.
+
+```{r}
+#| echo: false
+setosa_mean_petal_length <- table %>% # making a new object from our summarised data table above
+  filter(Species == "setosa") %>% # filtering to our desired group
+  select(mean_petal_length) %>% # select our desired variable 
+  round(digits = 2) # round our decimal places
+
+versicolor_mean_petal_length <- table %>% # making a new object from our summarised data table above
+  filter(Species == "versicolor") %>% # filtering to our desired group
+  select(mean_petal_length) %>%# select our desired variable 
+  round(digits = 2) # round our decimal places
+```
+
+After creating objects with our extracted values, we can incorporate them into our write up:
+
+* The Setosa species had a mean petal length of `r setosa_mean_petal_length`mm. 
+* The Versicolor species had a mean petal length of `r versicolor_mean_petal_length` mm.
+
+{{< pagebreak >}}
+
+## Statistical analyses
+
+Lets say we wanted to conduct an analysis to decide if there is a significant difference between the petal length of the flowers.
+
+We would use the `aov()` function to conduct an ANOVA analysis with our desired variables. Whilst we can use `summary()` to help us interpret the results, it is not a journal/thesis friendly format for reporting.
+
+::: {#tbl-t1 tbl-pos="h" layout-ncol="1"}
+
+```{r}
+#| echo: true
+#| fig-show: hold
+
+analysis <- aov(Petal.Length ~ Species, data = iris) # this creates a list object of the analysis, which is trickier to work with
+summary(analysis) # summary
+```
+
+:::
+
+### Using broom to tidy the output
+
+To get something friendlier to work with, we have to use the `tidy()` function from the `broom` package. This function will also work on `t.test()`, `lm()`, `glm()`, and `lmer()` as well as a wide variety of other analysis objects.
+
+Whatever your analysis, the [`broom`](https://broom.tidymodels.org/articles/broom.html) family of functions will likely cover what you need.
+
+From there, we will use the `gt()` function to make the output presentable. This time we will also use the `fmt_number()` to format the numbers of the output
+
+::: {#tbl-t2 tbl-pos="h" layout-ncol="1"}
+
+```{r}
+#| echo: false
+
+analysis_tidy <- analysis %>% tidy() # tidy the data
+
+analysis_tidy %>%
+  gt() %>% # tidy the output with gt()
+  fmt_number(decimals = 3) # limiting the output numbers to 3 decimal places.
+```
+
+:::
+
+ANOVA analysis demonstrated a significant difference between Iris Species and petal length ($F$(`r analysis_tidy[1,2]`,`r analysis_tidy[2,2]`) = `r analysis_tidy %>% filter(term == "Species") %>% select(statistic) %>% round(3)`, $p$<.001).
+
+Above we use the `analysis_tidy` object to extract our analysis directly into the text. The first 2 inline chunks use `base r` to extract the values, where the first number in the square brackets represents the row number, and the second number represents the column number. We used it here to extract the degrees of freedom. The second chunk was used to extract the $F$ statistic. Finally, I took a lazy shortcut for the p value, as formatting the output to meet APA standards would have been overwhelming for this introductory course. If we wanted to extract the number directly from our object, it would look like this $p$ = `r analysis_tidy[1,6]`. 
+
+My point here is - sometimes its ok for us to take shortcuts if we need to get the job done. But be aware that the solution to solve your problem will likely exist online.
+
+
+## Plots
+
+
+And finally for today - plots! For this we will use the trusty `ggplot()` function. 
+
+If you need a refresher on using ggplot, please check out our [Good Data Visualisation with R](https://github.com/DCS-training/Good-Data-Visualisation-with-R) materials. 
+
+```{r}
+#| echo: false
+#| fig-show: hold
+
+ggplot(
+  data = iris, # setting our data
+  aes(
+    x = Species, y = Petal.Length, fill = Species #setting our variables
+  )
+) +
+  geom_boxplot() + # create boxplot
+  theme_classic() + # classic theme is a nice journal friendly format
+  theme(legend.position = "none") + # removing the legend, by setting position to "none". 
+  labs(
+    # setting our plot labels
+    title = "Petal Length comparison by Iris species",
+    x = "Iris Species",
+    y = "Petal Length (mm)"
+  )
+
+
+```
+
+
+
+
+
+
+
