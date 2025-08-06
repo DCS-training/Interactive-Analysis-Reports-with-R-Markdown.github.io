@@ -113,4 +113,7 @@ Once you have R and R Studio installed, open R Studio
 7. Press Create Project
 Congratulations you have now pulled the content of the repository on your Notable server space.
 
-  
+## Author & License
+This material was developed by **Rhys Davies** .
+
+All material collected here is free to use but is covered by a License: [![License: CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc/4.0/) license
